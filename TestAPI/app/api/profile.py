@@ -1,17 +1,22 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from app.database import get_session
 from app.models import User, Course, UC
 from app.schemas import ProfileResponse, CourseResponse
 from app.core.helper import status_Course
+from app.api.auth import get_current_user
 
 router = APIRouter(prefix="/profile", tags=["profile"])
 
 
 @router.get("", response_model=ProfileResponse)
-def get_profile(user_id: int = Query(...), session: Session = Depends(get_session)):
+def get_profile(
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
     try:
-        user = session.get(User, user_id)
+        user = current_user
+        user_id = user.id
         if not user or user.id is None:
             raise HTTPException(status_code=404, detail="Пользователь не найден")
         
