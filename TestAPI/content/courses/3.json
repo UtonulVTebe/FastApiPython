@@ -1,47 +1,212 @@
 {
   "Topic1": {
-    "title": "Введение",
+    "title": "Введение в Python",
     "lectures": {
       "Lecture1": {
-        "title": "История создания",
-        "content": "# Бла бла бла \nбла бла бла",
+        "title": "Что такое Python?",
+        "content": "# Что такое Python?\n\nPython — это высокоуровневый язык программирования общего назначения, который был создан Гвидо ван Россумом и впервые выпущен в 1991 году.\n\n## Основные особенности Python:\n\n- **Простота и читаемость**: Синтаксис Python очень понятный и близок к естественному языку\n- **Интерпретируемый язык**: Код выполняется построчно, что упрощает отладку\n- **Динамическая типизация**: Не нужно явно указывать типы переменных\n- **Кроссплатформенность**: Работает на Windows, Linux, macOS\n- **Большая стандартная библиотека**: Множество встроенных модулей для различных задач\n\n## Где используется Python?\n\n- Веб-разработка (Django, Flask)\n- Наука о данных и машинное обучение\n- Автоматизация и скрипты\n- Разработка игр\n- Работа с базами данных\n\nPython отлично подходит для начинающих программистов благодаря своей простоте и понятности.",
         "tasks": {
-          "Выбери ответ": {
-            "html": "блаблабла",
-            "type": "single_choice"
+          "task1": {
+            "html": "В каком году был создан Python?",
+            "type": "single_choice",
+            "options": [
+              "1989",
+              "1991",
+              "1995",
+              "2000"
+            ],
+            "correct_answer": 1
+          },
+          "task2": {
+            "html": "Какие из перечисленных особенностей относятся к Python?",
+            "type": "multiple_choice",
+            "options": [
+              "Простота и читаемость кода",
+              "Статическая типизация",
+              "Интерпретируемый язык",
+              "Работает только на Windows"
+            ],
+            "correct_answer": [0, 2]
           }
         }
       },
       "Lecture2": {
-        "title": "Лекция 2",
-        "content": "бла бла бла ",
+        "title": "Установка и первый запуск",
+        "content": "# Установка Python\n\n## Установка на Windows\n\n1. Скачайте установщик с официального сайта python.org\n2. Запустите установщик и отметьте \"Add Python to PATH\"\n3. Выберите \"Install Now\"\n4. Дождитесь завершения установки\n\n## Проверка установки\n\nОткройте командную строку (cmd) и выполните:\n\n```bash\npython --version\n```\n\nДолжна отобразиться версия Python, например: `Python 3.11.0`\n\n## Первая программа\n\nСоздайте файл `hello.py` со следующим содержимым:\n\n```python\nprint(\"Hello, World!\")\n```\n\nЗапустите программу:\n\n```bash\npython hello.py\n```\n\nВы увидите вывод: `Hello, World!`\n\n## Интерактивный режим\n\nPython можно запустить в интерактивном режиме, просто введя `python` в командной строке. Это позволяет выполнять команды построчно и сразу видеть результат.",
         "tasks": {
           "task1": {
-            "html": "задача 2 ",
-            "type": "multiple_choice",
+            "html": "Какая команда используется для проверки версии Python?",
+            "type": "single_choice",
             "options": [
-              "раз",
-              "два",
-              "три"
+              "python --version",
+              "python -v",
+              "python version",
+              "python check"
             ],
-            "correct_answer": "[0,2]"
+            "correct_answer": 0
+          },
+          "task2": {
+            "html": "Что выведет программа: `print(\"Hello, World!\")`?",
+            "type": "text_answer",
+            "correct_answer": "Hello, World!",
+            "placeholder": "Введите точный вывод программы"
           }
         }
       }
     }
   },
   "Topic2": {
-    "title": "Типы данных",
+    "title": "Основы синтаксиса",
     "lectures": {
       "Lecture1": {
-        "title": "Численные типы данных. INT",
-        "content": "бла бла бла бла бла ",
+        "title": "Переменные и типы данных",
+        "content": "# Переменные в Python\n\nВ Python переменные создаются простым присваиванием значения. Не нужно объявлять тип переменной заранее.\n\n```python\nname = \"Иван\"\nage = 25\nheight = 1.75\nis_student = True\n```\n\n## Основные типы данных\n\n### Числа\n- **int** — целые числа: `42`, `-10`, `0`\n- **float** — числа с плавающей точкой: `3.14`, `-0.5`, `2.0`\n\n### Строки (str)\nСтроки в Python создаются с помощью кавычек:\n\n```python\nmessage = \"Привет\"\nname = 'Иван'\nmultiline = \"\"\"Многострочная\nстрока\"\"\"\n```\n\n### Булевы значения (bool)\n- `True` — истина\n- `False` — ложь\n\n### Списки (list)\nСписки — это упорядоченные коллекции элементов:\n\n```python\nnumbers = [1, 2, 3, 4, 5]\nfruits = [\"яблоко\", \"банан\", \"апельсин\"]\nmixed = [1, \"текст\", 3.14, True]\n```\n\n## Операции со строками\n\n```python\nfirst_name = \"Иван\"\nlast_name = \"Петров\"\nfull_name = first_name + \" \" + last_name  # Конкатенация\nprint(full_name)  # Иван Петров\n```\n\n## Проверка типа\n\n```python\ntype(42)        # <class 'int'>\ntype(\"hello\")   # <class 'str'>\ntype([1, 2, 3]) # <class 'list'>\n```",
         "tasks": {
           "task1": {
-            "html": "2 + 2 = ??",
+            "html": "Какой тип данных у переменной `x = 3.14`?",
+            "type": "single_choice",
+            "options": [
+              "int",
+              "float",
+              "str",
+              "bool"
+            ],
+            "correct_answer": 1
+          },
+          "task2": {
+            "html": "Что выведет код: `print(\"Hello\" + \" \" + \"World\")`?",
             "type": "text_answer",
-            "correct_answer": "четыре",
-            "placeholder": "ответ буквами"
+            "correct_answer": "Hello World",
+            "placeholder": "Введите результат"
+          },
+          "task3": {
+            "html": "Какие из перечисленных являются корректными способами создания списка в Python?",
+            "type": "multiple_choice",
+            "options": [
+              "list = [1, 2, 3]",
+              "list = []",
+              "list = list(1, 2, 3)",
+              "list = [\"a\", \"b\", \"c\"]"
+            ],
+            "correct_answer": [0, 1, 3]
+          }
+        }
+      },
+      "Lecture2": {
+        "title": "Операторы и выражения",
+        "content": "# Операторы в Python\n\n## Арифметические операторы\n\n```python\n# Сложение\nresult = 5 + 3  # 8\n\n# Вычитание\nresult = 10 - 4  # 6\n\n# Умножение\nresult = 3 * 4   # 12\n\n# Деление (всегда возвращает float)\nresult = 10 / 3  # 3.333...\n\n# Целочисленное деление\nresult = 10 // 3  # 3\n\n# Остаток от деления (модуло)\nresult = 10 % 3   # 1\n\n# Возведение в степень\nresult = 2 ** 3   # 8\n```\n\n## Операторы сравнения\n\n```python\n5 > 3   # True\n5 < 3   # False\n5 == 5  # True\n5 != 3  # True\n5 >= 5  # True\n5 <= 3  # False\n```\n\n## Логические операторы\n\n```python\n# AND — оба условия должны быть True\nTrue and True   # True\nTrue and False  # False\n\n# OR — хотя бы одно условие должно быть True\nTrue or False   # True\nFalse or False  # False\n\n# NOT — инверсия\nnot True   # False\nnot False  # True\n```\n\n## Операторы присваивания\n\n```python\nx = 5\nx += 3  # x = x + 3, результат: 8\nx -= 2  # x = x - 2, результат: 6\nx *= 2  # x = x * 2, результат: 12\nx /= 3  # x = x / 3, результат: 4.0\n```\n\n## Приоритет операций\n\n1. Скобки `()`\n2. Возведение в степень `**`\n3. Умножение, деление, остаток `*`, `/`, `%`, `//`\n4. Сложение, вычитание `+`, `-`\n5. Операторы сравнения\n6. Логические операторы",
+        "tasks": {
+          "task1": {
+            "html": "Чему равно выражение: `10 // 3`?",
+            "type": "single_choice",
+            "options": [
+              "3.33",
+              "3",
+              "1",
+              "4"
+            ],
+            "correct_answer": 1
+          },
+          "task2": {
+            "html": "Что вернет выражение: `(5 > 3) and (2 < 4)`?",
+            "type": "single_choice",
+            "options": [
+              "True",
+              "False",
+              "5",
+              "Ошибка"
+            ],
+            "correct_answer": 0
+          },
+          "task3": {
+            "html": "Чему будет равно `x` после выполнения: `x = 5; x += 3; x *= 2`?",
+            "type": "text_answer",
+            "correct_answer": "16",
+            "placeholder": "Введите число"
+          }
+        }
+      }
+    }
+  },
+  "Topic3": {
+    "title": "Управляющие конструкции",
+    "lectures": {
+      "Lecture1": {
+        "title": "Условные операторы",
+        "content": "# Условные операторы if/elif/else\n\nУсловные операторы позволяют выполнять код в зависимости от условий.\n\n## Базовый синтаксис\n\n```python\nif условие:\n    # код выполнится, если условие True\n    print(\"Условие выполнено\")\n```\n\n## Полная структура if/elif/else\n\n```python\nage = 18\n\nif age < 18:\n    print(\"Несовершеннолетний\")\nelif age < 65:\n    print(\"Взрослый\")\nelse:\n    print(\"Пенсионер\")\n```\n\n## Вложенные условия\n\n```python\nscore = 85\n\nif score >= 90:\n    grade = \"A\"\nelse:\n    if score >= 80:\n        grade = \"B\"\n    else:\n        if score >= 70:\n            grade = \"C\"\n        else:\n            grade = \"F\"\n```\n\n## Тернарный оператор\n\nКороткая запись для простых условий:\n\n```python\nage = 20\nstatus = \"Взрослый\" if age >= 18 else \"Несовершеннолетний\"\n```\n\n## Логические операторы в условиях\n\n```python\nage = 25\nhas_license = True\n\nif age >= 18 and has_license:\n    print(\"Можно водить\")\n\nif age < 18 or age > 65:\n    print(\"Особая категория\")\n```",
+        "tasks": {
+          "task1": {
+            "html": "Что выведет код:\n```python\nx = 10\nif x > 5:\n    print(\"Больше\")\nelse:\n    print(\"Меньше\")\n```",
+            "type": "single_choice",
+            "options": [
+              "Больше",
+              "Меньше",
+              "Ничего",
+              "Ошибка"
+            ],
+            "correct_answer": 0
+          },
+          "task2": {
+            "html": "Напишите код, который проверяет, является ли число четным. Если число четное, выведите \"Четное\", иначе \"Нечетное\". Используйте переменную `num = 8`.",
+            "type": "manual"
+          }
+        }
+      },
+      "Lecture2": {
+        "title": "Циклы for и while",
+        "content": "# Циклы в Python\n\nЦиклы позволяют выполнять код многократно.\n\n## Цикл for\n\nЦикл `for` используется для перебора элементов последовательности:\n\n```python\n# Перебор списка\nfruits = [\"яблоко\", \"банан\", \"апельсин\"]\nfor fruit in fruits:\n    print(fruit)\n```\n\n```python\n# Перебор строки\nfor char in \"Python\":\n    print(char)\n```\n\n```python\n# Функция range()\nfor i in range(5):\n    print(i)  # 0, 1, 2, 3, 4\n\nfor i in range(2, 6):\n    print(i)  # 2, 3, 4, 5\n\nfor i in range(0, 10, 2):\n    print(i)  # 0, 2, 4, 6, 8\n```\n\n## Цикл while\n\nЦикл `while` выполняется, пока условие истинно:\n\n```python\ncount = 0\nwhile count < 5:\n    print(count)\n    count += 1\n```\n\n## Управление циклами\n\n### break — выход из цикла\n\n```python\nfor i in range(10):\n    if i == 5:\n        break\n    print(i)  # 0, 1, 2, 3, 4\n```\n\n### continue — переход к следующей итерации\n\n```python\nfor i in range(10):\n    if i % 2 == 0:\n        continue\n    print(i)  # 1, 3, 5, 7, 9\n```\n\n## Вложенные циклы\n\n```python\nfor i in range(3):\n    for j in range(2):\n        print(f\"i={i}, j={j}\")\n```",
+        "tasks": {
+          "task1": {
+            "html": "Сколько раз выполнится цикл:\n```python\nfor i in range(5):\n    print(i)\n```",
+            "type": "single_choice",
+            "options": [
+              "4",
+              "5",
+              "6",
+              "Ошибка"
+            ],
+            "correct_answer": 1
+          },
+          "task2": {
+            "html": "Что выведет код:\n```python\nfor i in range(3):\n    if i == 1:\n        continue\n    print(i)\n```",
+            "type": "multiple_choice",
+            "options": [
+              "0",
+              "1",
+              "2",
+              "3"
+            ],
+            "correct_answer": [0, 2]
+          },
+          "task3": {
+            "html": "Напишите цикл, который выводит все четные числа от 0 до 10 включительно.",
+            "type": "manual"
+          }
+        }
+      }
+    }
+  },
+  "Topic4": {
+    "title": "Функции",
+    "lectures": {
+      "Lecture1": {
+        "title": "Создание и вызов функций",
+        "content": "# Функции в Python\n\nФункции позволяют группировать код для повторного использования.\n\n## Определение функции\n\n```python\ndef greet():\n    print(\"Привет!\")\n\n# Вызов функции\ngreet()\n```\n\n## Функции с параметрами\n\n```python\ndef greet(name):\n    print(f\"Привет, {name}!\")\n\ngreet(\"Иван\")  # Привет, Иван!\n```\n\n## Функции с возвращаемым значением\n\n```python\ndef add(a, b):\n    return a + b\n\nresult = add(3, 5)\nprint(result)  # 8\n```\n\n## Параметры по умолчанию\n\n```python\ndef greet(name, greeting=\"Привет\"):\n    print(f\"{greeting}, {name}!\")\n\ngreet(\"Иван\")           # Привет, Иван!\ngreet(\"Иван\", \"Здравствуй\")  # Здравствуй, Иван!\n```\n\n## Именованные аргументы\n\n```python\ndef create_user(name, age, email):\n    print(f\"Имя: {name}, Возраст: {age}, Email: {email}\")\n\ncreate_user(age=25, email=\"ivan@mail.ru\", name=\"Иван\")\n```\n\n## Локальные и глобальные переменные\n\n```python\nx = 10  # Глобальная переменная\n\ndef func():\n    x = 5  # Локальная переменная\n    print(x)  # 5\n\nfunc()\nprint(x)  # 10\n```",
+        "tasks": {
+          "task1": {
+            "html": "Что выведет код:\n```python\ndef multiply(a, b):\n    return a * b\n\nresult = multiply(3, 4)\nprint(result)\n```",
+            "type": "single_choice",
+            "options": [
+              "7",
+              "12",
+              "34",
+              "Ошибка"
+            ],
+            "correct_answer": 1
+          },
+          "task2": {
+            "html": "Напишите функцию `square`, которая принимает число и возвращает его квадрат. Например, `square(5)` должно вернуть `25`.",
+            "type": "manual"
           }
         }
       }
