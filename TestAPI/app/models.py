@@ -28,10 +28,30 @@ class User(SQLModel, table=True):
 
 
 class Grade(SQLModel, table=True):
+    """
+    Историческая таблица оценок (не используется в новой логике отправки работ).
+    Сохраняем для совместимости.
+    """
     id: Optional[int] = Field(default=None, primary_key=True)
     URL: str
     status: h.status_Grade = Field(default=h.status_Grade.not_verified)
     grade: int
+
+
+class Submission(SQLModel, table=True):
+    """
+    Отправка решения по задаче курса.
+    """
+    id: Optional[int] = Field(default=None, primary_key=True)
+    course_id: int = Field(foreign_key="course.id")
+    topic_key: str
+    lecture_key: str
+    task_key: str
+    user_id: int = Field(foreign_key="user.id")
+    answer: str
+    status: h.status_Grade = Field(default=h.status_Grade.not_verified)
+    grade: Optional[int] = None
+    teacher_comment: Optional[str] = None
 
 
 class Course(SQLModel, table=True):

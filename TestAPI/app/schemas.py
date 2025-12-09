@@ -1,6 +1,7 @@
 from typing import Optional, List
 from pydantic import BaseModel
 from app.core.helper import status_Course
+from app.core.helper import status_Grade
 
 
 class UserRegister(BaseModel):
@@ -57,4 +58,36 @@ class CourseUpdate(BaseModel):
     title: Optional[str] = None
     status: Optional[status_Course] = None
     content: Optional[dict] = None
+
+
+class SubmissionBase(BaseModel):
+    course_id: int
+    topic_key: str
+    lecture_key: str
+    task_key: str
+    answer: str
+
+
+class SubmissionCreate(SubmissionBase):
+    pass
+
+
+class SubmissionUpdateGrade(BaseModel):
+    status: status_Grade = status_Grade.rated
+    grade: Optional[int] = None
+    teacher_comment: Optional[str] = None
+
+
+class SubmissionResponse(BaseModel):
+    id: int
+    course_id: int
+    topic_key: str
+    lecture_key: str
+    task_key: str
+    user_id: int
+    answer: str
+    status: status_Grade
+    grade: Optional[int] = None
+    teacher_comment: Optional[str] = None
+    user_name: Optional[str] = None  # Имя пользователя (добавляется в API для удобства)
 

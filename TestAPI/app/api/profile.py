@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from app.database import get_session
 from app.models import User, Course, UC
-from app.schemas import ProfileResponse, CourseResponse
+from app.schemas import ProfileResponse, CourseResponse, UserResponse
 from app.core.helper import status_Course
 from app.api.auth import get_current_user
 
@@ -90,3 +90,19 @@ def get_profile(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка при получении профиля: {str(e)}")
 
+
+@router.get("/user/{user_id}", response_model=UserResponse)
+def get_user_by_id(
+    user_id: int,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    """Получить информацию о пользователе по ID (для преподавателей)"""
+    if current_user.role != "Teacher":
+        raise HTTPException(status_code=403, detail="Только преподаватели могут просматривать информацию о других пользователях")
+    
+    user = session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+    
+    return UserResponse(id=user.id, name=user.name, role=user.role)
