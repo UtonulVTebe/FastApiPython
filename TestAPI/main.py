@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.database import create_db_and_tables
 from app.api import auth, profile, courses
@@ -14,6 +15,20 @@ app = FastAPI(
     description="API для управления пользователями, курсами и оценками",
     version="1.0.0",
     lifespan=lifespan
+)
+
+# Разрешаем запросы с фронта (Vue по умолчанию на 8080)
+origins = [
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(auth.router)
