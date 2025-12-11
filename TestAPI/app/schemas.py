@@ -21,6 +21,21 @@ class UserResponse(BaseModel):
     role: Optional[str] = None
 
 
+class UserUpdateName(BaseModel):
+    name: str
+
+
+class UserRoleUpdate(BaseModel):
+    role: str
+
+
+class UsersPage(BaseModel):
+    items: List[UserResponse]
+    total: int
+    page: int
+    page_size: int
+
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"

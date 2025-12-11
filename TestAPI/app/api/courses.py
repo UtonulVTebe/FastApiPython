@@ -130,6 +130,9 @@ def get_course_content(
     return CourseContentResponse(course=course_dto, content=content)
 
 
+TEACH_ROLES = {"Teacher", "Admin"}
+
+
 @router.post("", response_model=CourseResponse)
 def create_course(
     course_data: CourseCreate,
@@ -137,8 +140,8 @@ def create_course(
     session: Session = Depends(get_session),
 ):
     """Создать новый курс (только для преподавателей)"""
-    if current_user.role != "Teacher":
-        raise HTTPException(status_code=403, detail="Только преподаватели могут создавать курсы")
+    if current_user.role not in TEACH_ROLES:
+        raise HTTPException(status_code=403, detail="Только преподаватели или администраторы могут создавать курсы")
     
     if current_user.id is None:
         raise HTTPException(status_code=500, detail="Ошибка данных пользователя")
@@ -229,3 +232,32 @@ def update_course(
         creator_id=course.creator_id
     )
 
+
+@router.delete("/{course_id}", response_model=dict)
+def delete_course(
+    course_id: int = Path(...),
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Удалить курс (только создатель)"""
+    course = session.get(Course, course_id)
+    if not course:
+        raise HTTPException(status_code=404, detail="Курс не найден")
+
+    if current_user.id is None or course.creator_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Только создатель может удалить курс")
+
+    # Пытаемся удалить файл контента
+    if course.URL:
+        file_path = (CONTENT_ROOT / course.URL).resolve()
+        try:
+            if CONTENT_ROOT in file_path.parents or CONTENT_ROOT == file_path.parent:
+                if file_path.exists():
+                    file_path.unlink()
+        except Exception:
+            # не блокируем удаление если файл не удалился
+            pass
+
+    session.delete(course)
+    session.commit()
+    return {"message": "Курс удален", "id": course_id}

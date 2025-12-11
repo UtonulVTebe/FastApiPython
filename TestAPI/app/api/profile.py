@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from sqlmodel import Session, select
 from app.database import get_session
 from app.models import User, Course, UC
-from app.schemas import ProfileResponse, CourseResponse, UserResponse
+from app.schemas import ProfileResponse, CourseResponse, UserResponse, UserUpdateName, UserRoleUpdate, UsersPage
 from app.core.helper import status_Course
 from app.api.auth import get_current_user
 
@@ -23,7 +23,7 @@ def get_profile(
         created_courses = []
         enrolled_courses = []
         
-        if user.role == "Teacher":
+        if user.role in {"Teacher", "Admin"}:
             created_courses_query = session.exec(
                 select(Course).where(Course.creator_id == user_id)
             ).all()
@@ -98,11 +98,120 @@ def get_user_by_id(
     session: Session = Depends(get_session)
 ):
     """Получить информацию о пользователе по ID (для преподавателей)"""
-    if current_user.role != "Teacher":
-        raise HTTPException(status_code=403, detail="Только преподаватели могут просматривать информацию о других пользователях")
+    if current_user.role not in {"Teacher", "Admin"}:
+        raise HTTPException(status_code=403, detail="Только преподаватели или администраторы могут просматривать информацию о других пользователях")
     
     user = session.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
     
+    return UserResponse(id=user.id, name=user.name, role=user.role)
+
+
+@router.put("/name", response_model=UserResponse)
+def update_name(
+    payload: UserUpdateName,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Изменение своего имени"""
+    user = session.get(User, current_user.id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+
+    new_name = payload.name.strip()
+    if not new_name:
+        raise HTTPException(status_code=400, detail="Имя не может быть пустым")
+
+    user.name = new_name
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return UserResponse(id=user.id, name=user.name, role=user.role)
+
+
+@router.get("/users", response_model=UsersPage)
+def list_users(
+    search: str = Query(None, description="Поиск по имени или логину"),
+    role: str = Query(None, description="Фильтр по роли"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=200),
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Список пользователей (доступно только администраторам)"""
+    if current_user.role != "Admin":
+        raise HTTPException(status_code=403, detail="Доступ только для администраторов")
+
+    query = select(User)
+    if search:
+        like = f"%{search.lower()}%"
+        query = query.where(
+            (User.name.ilike(like)) | (User.login.ilike(like))
+        )
+    if role:
+        query = query.where(User.role == role)
+
+    total = session.exec(query.with_only_columns(User.id).order_by(None)).all()
+    total_count = len(total)
+
+    items = session.exec(
+        query.order_by(User.id.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+
+    users = [UserResponse(id=u.id, name=u.name, role=u.role) for u in items if u.id is not None]
+    return UsersPage(items=users, total=total_count, page=page, page_size=page_size)
+
+
+@router.post("/users/{user_id}/make-teacher", response_model=UserResponse)
+def make_teacher(
+    user_id: int = Path(...),
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Назначить пользователя преподавателем (только администраторы)"""
+    if current_user.role != "Admin":
+        raise HTTPException(status_code=403, detail="Доступ только для администраторов")
+
+    user = session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+
+    if user.role == "Teacher":
+        return UserResponse(id=user.id, name=user.name, role=user.role)
+
+    user.role = "Teacher"
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return UserResponse(id=user.id, name=user.name, role=user.role)
+
+
+@router.post("/users/{user_id}/revoke-teacher", response_model=UserResponse)
+def revoke_teacher(
+    user_id: int = Path(...),
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Снять роль преподавателя (только администраторы)"""
+    if current_user.role != "Admin":
+        raise HTTPException(status_code=403, detail="Доступ только для администраторов")
+
+    user = session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+
+    # Нельзя разжаловать самого себя
+    if user.id == current_user.id:
+        raise HTTPException(status_code=400, detail="Нельзя изменить свою роль")
+
+    if user.role != "Teacher":
+        return UserResponse(id=user.id, name=user.name, role=user.role)
+
+    user.role = "Student"
+    session.add(user)
+    session.commit()
+    session.refresh(user)
     return UserResponse(id=user.id, name=user.name, role=user.role)
