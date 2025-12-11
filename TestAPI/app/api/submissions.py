@@ -3,6 +3,7 @@ import json
 from pathlib import Path as FSPath
 from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from sqlmodel import Session, select, or_
+from sqlalchemy import func
 from app.database import get_session
 from app.models import Submission, Course, User, UC
 from app.schemas import SubmissionCreate, SubmissionUpdateGrade, SubmissionResponse
@@ -235,35 +236,55 @@ def create_or_update_submission(
     return new_submission
 
 
-@router.get("/mine", response_model=List[SubmissionResponse])
+@router.get("/mine", response_model=dict)
 def list_my_submissions(
     course_id: Optional[int] = Query(None),
     lecture_key: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
     if current_user.id is None:
         raise HTTPException(status_code=401, detail="Неизвестный пользователь")
 
-    query = select(Submission).where(Submission.user_id == current_user.id)
+    base_query = select(Submission).where(Submission.user_id == current_user.id)
     if course_id is not None:
-        query = query.where(Submission.course_id == course_id)
+        base_query = base_query.where(Submission.course_id == course_id)
     if lecture_key is not None:
-        query = query.where(Submission.lecture_key == lecture_key)
+        base_query = base_query.where(Submission.lecture_key == lecture_key)
 
-    submissions = session.exec(query).all()
-    return submissions
+    total = session.exec(
+        base_query.with_only_columns(func.count()).order_by(None)
+    ).one()
+
+    items = session.exec(
+        base_query
+        .order_by(Submission.id.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+    }
 
 
-@router.get("/review", response_model=List[SubmissionResponse])
+@router.get("/review", response_model=dict)
 def list_for_review(
     course_id: Optional[int] = Query(None),
     lecture_key: Optional[str] = Query(None),
+    status: Optional[str] = Query(None, description="pending | unviewed | all"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
     """
-    Преподаватель просматривает все отправки по своим курсам.
+    Преподаватель просматривает все отправки по своим курсам с пагинацией.
     """
     if current_user.id is None:
         raise HTTPException(status_code=401, detail="Неизвестный пользователь")
@@ -288,7 +309,7 @@ def list_for_review(
                 base_query = base_query.where(Submission.user_id.in_(enrolled_user_ids))
             else:
                 # Если никто не зачислен, возвращаем пустой список
-                return []
+                return {"items": [], "total": 0, "page": page, "page_size": page_size}
     else:
         # Выбираем только курсы, созданные преподавателем
         teacher_courses = session.exec(
@@ -297,7 +318,7 @@ def list_for_review(
         teacher_course_ids = {c.id for c in teacher_courses if c.id is not None}
         
         if not teacher_course_ids:
-            return []
+            return {"items": [], "total": 0, "page": page, "page_size": page_size}
         
         # Для публичных курсов фильтруем по зачисленным
         public_course_ids = {c.id for c in teacher_courses if c.status == status_Course.public}
@@ -324,7 +345,7 @@ def list_for_review(
             if conditions:
                 base_query = base_query.where(or_(*conditions))
             else:
-                return []
+                return {"items": [], "total": 0, "page": page, "page_size": page_size}
         else:
             # Нет публичных курсов - показываем все
             base_query = base_query.where(Submission.course_id.in_(teacher_course_ids))
@@ -332,7 +353,39 @@ def list_for_review(
     if lecture_key is not None:
         base_query = base_query.where(Submission.lecture_key == lecture_key)
 
-    submissions = session.exec(base_query).all()
+    # Считаем агрегаты до применения статуса
+    count_query = base_query
+    pending_count = session.exec(
+        count_query.where(Submission.status == status_Grade.not_verified)
+        .with_only_columns(func.count()).order_by(None)
+    ).one()
+    unviewed_count = session.exec(
+        count_query.where(
+            (Submission.status == status_Grade.rated) &
+            (Submission.teacher_comment == "Автоматическая проверка")
+        )
+        .with_only_columns(func.count()).order_by(None)
+    ).one()
+
+    # Фильтр по статусу (опционально)
+    if status == "pending":
+        base_query = base_query.where(Submission.status == status_Grade.not_verified)
+    elif status == "unviewed":
+        base_query = base_query.where(
+            (Submission.status == status_Grade.rated) &
+            (Submission.teacher_comment == "Автоматическая проверка")
+        )
+
+    total = session.exec(
+        base_query.with_only_columns(func.count()).order_by(None)
+    ).one()
+
+    submissions = session.exec(
+        base_query
+        .order_by(Submission.id.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
     
     # Загружаем имена пользователей для удобства
     user_ids = {s.user_id for s in submissions if s.user_id is not None}
@@ -358,7 +411,14 @@ def list_for_review(
             sub_dict["user_name"] = users[sub.user_id].name
         result.append(sub_dict)
     
-    return result
+    return {
+        "items": result,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "pending_count": pending_count,
+        "unviewed_count": unviewed_count,
+    }
 
 
 @router.put("/{submission_id}/grade", response_model=SubmissionResponse)

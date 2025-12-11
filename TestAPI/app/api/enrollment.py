@@ -81,9 +81,11 @@ def unenroll_student(
     return {"message": "Ученик отчислен с курса", "enrolled": False}
 
 
-@router.get("/{course_id}/students", response_model=List[UserResponse])
+@router.get("/{course_id}/students", response_model=dict)
 def list_course_students(
     course_id: int = Path(...),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=200),
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
@@ -104,24 +106,36 @@ def list_course_students(
     ).all()
     
     student_ids = [uc.user_id for uc in ucs]
+    total = len(student_ids)
     
     if not student_ids:
-        return []
+        return {"items": [], "total": 0, "page": page, "page_size": page_size}
+    
+    start = (page - 1) * page_size
+    end = start + page_size
+    paginated_ids = student_ids[start:end]
     
     # Получаем информацию о пользователях
     students = []
-    for user_id in student_ids:
+    for user_id in paginated_ids:
         user = session.get(User, user_id)
         if user:
             students.append(UserResponse(id=user.id, name=user.name, role=user.role))
     
-    return students
+    return {
+        "items": students,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+    }
 
 
-@router.get("/{course_id}/available-students", response_model=List[UserResponse])
+@router.get("/{course_id}/available-students", response_model=dict)
 def list_available_students(
     course_id: int = Path(...),
     search: str = Query(None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=200),
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
@@ -152,5 +166,14 @@ def list_available_students(
             if not search or search.lower() in user.name.lower():
                 available.append(UserResponse(id=user.id, name=user.name, role=user.role))
     
-    return available
+    total = len(available)
+    start = (page - 1) * page_size
+    end = start + page_size
+    
+    return {
+        "items": available[start:end],
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+    }
 
