@@ -119,12 +119,15 @@ def get_course_content(
     content_raw = _load_course_content(course)
     content = _rewrite_local_links(content_raw)
 
+    creator = session.get(User, course.creator_id) if course.creator_id else None
+
     course_dto = CourseResponse(
         id=course.id,
         title=course.title,
         status=course.status,
         URL=course.URL,
         creator_id=course.creator_id,
+        creator_name=creator.name if creator else None,
     )
 
     return CourseContentResponse(course=course_dto, content=content)
@@ -182,7 +185,8 @@ def create_course(
         title=new_course.title,
         status=new_course.status,
         URL=new_course.URL,
-        creator_id=new_course.creator_id
+        creator_id=new_course.creator_id,
+        creator_name=current_user.name
     )
 
 
@@ -201,8 +205,8 @@ def update_course(
     if current_user.id is None:
         raise HTTPException(status_code=500, detail="Ошибка данных пользователя")
     
-    if course.creator_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Только создатель может редактировать курс")
+    if course.creator_id != current_user.id and current_user.role != "Admin":
+        raise HTTPException(status_code=403, detail="Только создатель или администратор может редактировать курс")
     
     # Обновляем поля курса
     if course_data.title is not None:
@@ -229,7 +233,8 @@ def update_course(
         title=course.title,
         status=course.status,
         URL=course.URL,
-        creator_id=course.creator_id
+        creator_id=course.creator_id,
+        creator_name=session.get(User, course.creator_id).name if course.creator_id else None
     )
 
 
@@ -244,8 +249,8 @@ def delete_course(
     if not course:
         raise HTTPException(status_code=404, detail="Курс не найден")
 
-    if current_user.id is None or course.creator_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Только создатель может удалить курс")
+    if current_user.id is None or (course.creator_id != current_user.id and current_user.role != "Admin"):
+        raise HTTPException(status_code=403, detail="Только создатель или администратор может удалить курс")
 
     # Пытаемся удалить файл контента
     if course.URL:

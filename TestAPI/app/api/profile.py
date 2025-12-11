@@ -33,7 +33,8 @@ def get_profile(
                     title=course.title,
                     status=course.status,
                     URL=course.URL,
-                    creator_id=course.creator_id
+                    creator_id=course.creator_id,
+                    creator_name=user.name
                 )
                 for course in created_courses_query
                 if course.id is not None
@@ -57,24 +58,28 @@ def get_profile(
                 continue
             
             if course.status == status_Course.public:
+                creator = session.get(User, course.creator_id) if course.creator_id else None
                 enrolled_courses.append(
                     CourseResponse(
                         id=course.id,
                         title=course.title,
                         status=course.status,
                         URL=course.URL,
-                        creator_id=course.creator_id
+                        creator_id=course.creator_id,
+                        creator_name=creator.name if creator else None
                     )
                 )
             elif course.status == status_Course.private:
                 if course.id in enrolled_course_ids:
+                    creator = session.get(User, course.creator_id) if course.creator_id else None
                     enrolled_courses.append(
                         CourseResponse(
                             id=course.id,
                             title=course.title,
                             status=course.status,
                             URL=course.URL,
-                            creator_id=course.creator_id
+                            creator_id=course.creator_id,
+                            creator_name=creator.name if creator else None
                         )
                     )
         

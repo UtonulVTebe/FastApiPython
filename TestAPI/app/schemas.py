@@ -48,6 +48,7 @@ class CourseResponse(BaseModel):
     status: status_Course
     URL: str
     creator_id: Optional[int] = None
+    creator_name: Optional[str] = None
 
 
 class ProfileResponse(BaseModel):
