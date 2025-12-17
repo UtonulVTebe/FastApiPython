@@ -15,7 +15,7 @@ __pycache__/
 *.sqlite3
 
 # --- Project generated content ---
-content/
+content/courses/
 testapi.db
 
 # --- IDE / OS ---
