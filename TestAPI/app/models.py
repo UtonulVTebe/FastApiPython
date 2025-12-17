@@ -7,9 +7,9 @@ if TYPE_CHECKING:
     from typing import List
 
 
-class UG(SQLModel, table=True):
-    grade_id: int = Field(foreign_key="grade.id", primary_key=True)
-    user_id: int = Field(foreign_key="user.id", primary_key=True)
+# class UG(SQLModel, table=True):
+#     grade_id: int = Field(foreign_key="grade.id", primary_key=True)
+#     user_id: int = Field(foreign_key="user.id", primary_key=True)
 
 
 class UC(SQLModel, table=True):
@@ -27,15 +27,15 @@ class User(SQLModel, table=True):
     password: Optional[str] = None
 
 
-class Grade(SQLModel, table=True):
-    """
-    Историческая таблица оценок (не используется в новой логике отправки работ).
-    Сохраняем для совместимости.
-    """
-    id: Optional[int] = Field(default=None, primary_key=True)
-    URL: str
-    status: h.status_Grade = Field(default=h.status_Grade.not_verified)
-    grade: int
+# class Grade(SQLModel, table=True):
+#     """
+#     Историческая таблица оценок (не используется в новой логике отправки работ).
+#     Сохраняем для совместимости.
+#     """
+#     id: Optional[int] = Field(default=None, primary_key=True)
+#     URL: str
+#     status: h.status_Grade = Field(default=h.status_Grade.not_verified)
+#     grade: int
 
 
 class Submission(SQLModel, table=True):
