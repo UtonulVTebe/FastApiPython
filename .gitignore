@@ -1,8 +1,30 @@
+# --- Virtual environments ---
 venv/
 env/
 .venv/
 
+# --- Python cache / bytecode ---
 __pycache__/
 *.py[cod]
-*$py.class
+*.pyo
+*.pyd
 
+# --- Databases ---
+*.db
+*.sqlite
+*.sqlite3
+
+# --- Project generated content ---
+content/
+testapi.db
+
+# --- IDE / OS ---
+.vscode/
+.idea/
+.DS_Store
+
+# --- Logs ---
+*.log
+
+# --- Environment variables ---
+.env
