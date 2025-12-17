@@ -162,6 +162,21 @@ def _check_answer(task: dict, user_answer: str) -> Tuple[bool, Optional[int]]:
     return (False, None)
 
 
+def _count_tasks_in_course(course: Course) -> int:
+    """Подсчет общего числа задач в курсе по JSON контенту"""
+    try:
+        content = _load_course_content(course)
+        total = 0
+        for topic in content.values():
+            lectures = topic.get("lectures", {}) if isinstance(topic, dict) else {}
+            for lecture in lectures.values():
+                tasks = lecture.get("tasks", {}) if isinstance(lecture, dict) else {}
+                total += len(tasks)
+        return total
+    except Exception:
+        return 0
+
+
 @router.post("", response_model=SubmissionResponse)
 def create_or_update_submission(
     submission: SubmissionCreate,
@@ -270,6 +285,60 @@ def list_my_submissions(
         "total": total,
         "page": page,
         "page_size": page_size,
+    }
+
+
+@router.get("/progress", response_model=dict)
+def submission_progress(
+    course_id: int = Query(...),
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """
+    Прогресс ученика по курсу:
+    - total_tasks: всего задач в курсе
+    - answered: сколько отправок сделал пользователь (уникальных задач)
+    - rated: сколько оценено
+    - pending_manual: сколько ожидает проверки (not verified)
+    - avg_grade: средняя оценка по оцененным задачам
+    - completion_rate: answered / total_tasks
+    """
+    if current_user.id is None:
+        raise HTTPException(status_code=401, detail="Неизвестный пользователь")
+
+    course = session.get(Course, course_id)
+    if not course:
+        raise HTTPException(status_code=404, detail="Курс не найден")
+
+    total_tasks = _count_tasks_in_course(course)
+
+    user_subs = session.exec(
+        select(Submission).where(
+            Submission.course_id == course_id,
+            Submission.user_id == current_user.id
+        )
+    ).all()
+
+    # считаем по уникальным задачам
+    answered_keys = {(s.topic_key, s.lecture_key, s.task_key) for s in user_subs}
+    answered = len(answered_keys)
+
+    rated = sum(1 for s in user_subs if s.status == status_Grade.rated)
+    pending_manual = sum(1 for s in user_subs if s.status == status_Grade.not_verified)
+
+    grades = [s.grade for s in user_subs if s.grade is not None]
+    avg_grade = round(sum(grades) / len(grades), 2) if grades else None
+
+    completion_rate = round((answered / total_tasks) * 100, 2) if total_tasks else 0
+
+    return {
+        "course_id": course_id,
+        "total_tasks": total_tasks,
+        "answered": answered,
+        "rated": rated,
+        "pending_manual": pending_manual,
+        "avg_grade": avg_grade,
+        "completion_rate": completion_rate,
     }
 
 
